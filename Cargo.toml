@@ -2,5 +2,17 @@
 name = "rustix3"
 version = "0.1.0"
 edition = "2021"
+authors = ["Dmitriy Sergeev <xaneets@gmail.com>"]
+description = "API lib for 3x-ui panel"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/Xaneets/rustix3"
+homepage = "https://github.com/Xaneets/rustix3"
 
+keywords = ["rust", "3x-ui", "api"]
+categories = ["development-tools"]
 [dependencies]
+log = "0.4.25"
+reqwest = { version = "0.12.12", features = ["json", "cookies"] }
+serde = { version = "1.0.217", features = ["derive"] }
+thiserror = "2.0.11"
