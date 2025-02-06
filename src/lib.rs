@@ -5,7 +5,7 @@ use crate::error::Error;
 pub mod client;
 pub mod error;
 pub mod models;
-mod enums;
+pub mod enums;
 
 pub use client::Client;
 

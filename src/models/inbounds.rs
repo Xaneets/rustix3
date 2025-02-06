@@ -2,9 +2,10 @@ use crate::models::Response;
 use serde::{Deserialize};
 use crate::enums::Protocol;
 
-pub type InboundsResponse = Response<Inbounds>;
+pub type InboundsResponse = Response<Vec<Inbounds>>;
+pub type InboundResponse = Response<Inbounds>;
 
-#[derive( Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct ClientStats {
     pub id: u64,
     #[serde(rename = "inboundId")]
@@ -19,7 +20,7 @@ pub struct ClientStats {
     pub reset: i64,
 }
 
-#[derive( Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct Inbounds {
     pub id: u64,
     pub up: u128,
@@ -30,7 +31,7 @@ pub struct Inbounds {
     #[serde(rename = "expiryTime")]
     pub expiry_time: i64,
     #[serde(rename = "clientStats")]
-    pub client_stats: Vec<ClientStats>,
+    pub client_stats: Option<Vec<ClientStats>>,
     pub listen: String,
     pub port: u16,
     pub protocol: Protocol,
