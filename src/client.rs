@@ -34,7 +34,7 @@ impl Client {
         Ok(client)
     }
 
-    fn gen_url(&self, segs: Vec<&str>) -> Result<Url> {
+    fn gen_url(&self, segs: Vec<&str>) -> Result<Url> { // todo paths to hashmap or enum
         let base = self.url.as_str().trim_end_matches('/');
         let mut url = Url::parse(base).map_err(|_| Error::InvalidUrl("Invalid base URL".into()))?;
 
