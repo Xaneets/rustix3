@@ -1,7 +1,7 @@
 use super::Result;
 use crate::error::Error;
-use crate::models::inbounds::{InboundResponse, InboundsResponse};
-use crate::models::{LoginResponse};
+use crate::models::inbounds::{ClientsStatsResponse, InboundResponse, InboundsResponse};
+use crate::models::LoginResponse;
 use log::debug;
 use reqwest::{Client as RClient, IntoUrl, StatusCode, Url};
 use serde::Serialize;
@@ -34,7 +34,8 @@ impl Client {
         Ok(client)
     }
 
-    fn gen_url(&self, segs: Vec<&str>) -> Result<Url> { // todo paths to hashmap or enum
+    fn gen_url(&self, segs: Vec<&str>) -> Result<Url> {
+        // todo paths to hashmap or enum
         let base = self.url.as_str().trim_end_matches('/');
         let mut url = Url::parse(base).map_err(|_| Error::InvalidUrl("Invalid base URL".into()))?;
 
@@ -91,13 +92,13 @@ impl Client {
         Ok(res.json().await?)
     }
 
-    pub async fn get_client_traffic_by_email(&self, email: String) -> Result<InboundsResponse> { // todo type
+    pub async fn get_client_traffic_by_email(&self, email: String) -> Result<ClientsStatsResponse> {
         let path = vec!["panel", "api", "inbounds", "getClientTraffics", &email];
         let res = self.client.get(self.gen_url(path)?).send().await?;
         Ok(res.json().await?)
     }
 
-    pub async fn get_client_traffic_by_id(&self, id: u64) -> Result<InboundsResponse> {// todo type
+    pub async fn get_client_traffic_by_id(&self, id: u64) -> Result<ClientsStatsResponse> {
         let id = id.to_string();
         let path = vec!["panel", "api", "inbounds", "getClientTrafficsById", &id];
         let res = self.client.get(self.gen_url(path)?).send().await?;
@@ -108,8 +109,7 @@ impl Client {
         let path = vec!["panel", "api", "inbounds", "createbackup"];
         let res = self.client.get(self.gen_url(path)?).send().await?;
         if res.status() != StatusCode::OK {
-            log::error!("{:?}",res.status());
-            return Err(Error::OtherError("Todo".into()))
+            return Err(Error::OtherError("Todo".into()));
         }
         Ok(())
     }

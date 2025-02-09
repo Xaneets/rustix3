@@ -4,6 +4,7 @@ use crate::enums::Protocol;
 
 pub type InboundsResponse = Response<Vec<Inbounds>>;
 pub type InboundResponse = Response<Inbounds>;
+pub type ClientsStatsResponse = Response<Vec<ClientStats>>;
 
 #[derive(Debug, Deserialize)]
 pub struct ClientStats {
