@@ -1,10 +1,10 @@
-use super::Result;
+use super::{ClientIpsResponse, ClientsStatsResponse, ClientsStatsVecResponse, InboundResponse, InboundsResponse, NullObjectResponse, Result};
 use crate::error::Error;
-use crate::models::inbounds::{ClientsStatsResponse, InboundResponse, InboundsResponse};
-use crate::models::LoginResponse;
-use log::debug;
+use log::{debug, error};
 use reqwest::{Client as RClient, IntoUrl, StatusCode, Url};
 use serde::Serialize;
+
+type LoginResponse = NullObjectResponse;
 
 #[derive(Debug)]
 pub struct Client {
@@ -36,6 +36,8 @@ impl Client {
 
     fn gen_url(&self, segs: Vec<&str>) -> Result<Url> {
         // todo paths to hashmap or enum
+        let mut base_segs = vec!["panel", "api", "inbounds"];
+        base_segs.extend(segs);
         let base = self.url.as_str().trim_end_matches('/');
         let mut url = Url::parse(base).map_err(|_| Error::InvalidUrl("Invalid base URL".into()))?;
 
@@ -43,7 +45,7 @@ impl Client {
             let mut path_segments = url
                 .path_segments_mut()
                 .map_err(|_| Error::InvalidUrl("Cannot be a base URL".into()))?;
-            path_segments.extend(segs);
+            path_segments.extend(base_segs);
         }
         debug!("Generated URL: {}", url);
         Ok(url)
@@ -80,37 +82,47 @@ impl Client {
     }
 
     pub async fn get_inbounds_list(&self) -> Result<InboundsResponse> {
-        let path = vec!["panel", "api", "inbounds", "list"];
+        let path = vec!["list"];
         let res = self.client.get(self.gen_url(path)?).send().await?;
-        Ok(res.json().await?)
+        let res = res.json().await.map_err(|e| {
+            error!("{e}");
+            e
+        })?;
+        Ok(res)
     }
 
     pub async fn get_inbound_by_id(&self, inbound_id: u64) -> Result<InboundResponse> {
         let id = inbound_id.to_string();
-        let path = vec!["panel", "api", "inbounds", "get", &id];
+        let path = vec!["get", &id];
         let res = self.client.get(self.gen_url(path)?).send().await?;
         Ok(res.json().await?)
     }
 
     pub async fn get_client_traffic_by_email(&self, email: String) -> Result<ClientsStatsResponse> {
-        let path = vec!["panel", "api", "inbounds", "getClientTraffics", &email];
-        let res = self.client.get(self.gen_url(path)?).send().await?;
+        let path = vec!["getClientTraffics", &email];
+        let res = self.client.get(self.gen_url(path)?).send().await?; // todo check is null return user not found
         Ok(res.json().await?)
     }
 
-    pub async fn get_client_traffic_by_id(&self, id: u64) -> Result<ClientsStatsResponse> {
+    pub async fn get_client_traffic_by_id(&self, id: String) -> Result<ClientsStatsVecResponse> { // todo id to uuid
         let id = id.to_string();
-        let path = vec!["panel", "api", "inbounds", "getClientTrafficsById", &id];
+        let path = vec!["getClientTrafficsById", &id];
         let res = self.client.get(self.gen_url(path)?).send().await?;
         Ok(res.json().await?)
     }
 
     pub async fn send_backup_by_bot(&self) -> Result<()> {
-        let path = vec!["panel", "api", "inbounds", "createbackup"];
+        let path = vec!["createbackup"];
         let res = self.client.get(self.gen_url(path)?).send().await?;
         if res.status() != StatusCode::OK {
             return Err(Error::OtherError("Todo".into()));
         }
         Ok(())
+    }
+
+    pub async fn get_client_ips(&self, client_email: String) -> Result<ClientIpsResponse> {
+        let path = vec!["clientIps", &client_email];
+        let res = self.client.post(self.gen_url(path)?).send().await?;
+        Ok(res.json().await?)
     }
 }

@@ -13,3 +13,16 @@ pub enum Protocol {
     Http,
     Wireguard,
 }
+
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum TransportProtocol {
+    Tcp,
+    #[serde(rename = "kcp")]
+    MKCP,
+    #[serde(rename = "ws")]
+    WebSocket,
+    GRPC,
+    HTTPUpgrade,
+    XHTTP,
+}

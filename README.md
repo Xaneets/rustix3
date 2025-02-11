@@ -5,7 +5,7 @@
 - [x] Client traffics with email
 - [x] Client traffics with id
 - [x] TG Send backup to admin
-- [ ] Client IP address
+- [x] Client IP address
 - [ ] Add inbound
 - [ ] Add client to inbound
 - [ ] Update inbound
