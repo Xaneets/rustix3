@@ -1,6 +1,6 @@
 [package]
 name = "rustix3"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Dmitriy Sergeev <xaneets@gmail.com>"]
 description = "API lib for 3x-ui panel"
