@@ -1,4 +1,4 @@
-use crate::enums::Protocol;
+use crate::inbounds::InboundProtocols;
 use serde::{Deserialize, Deserializer, Serialize};
 use std::ops::Not;
 
@@ -50,7 +50,7 @@ pub struct Inbounds {
     pub client_stats: Option<Vec<ClientStats>>,
     pub listen: String,
     pub port: u16,
-    pub protocol: Protocol,
+    pub protocol: InboundProtocols,
     #[serde(deserialize_with = "deserialize_settings")]
     pub settings: Settings,
     #[serde(rename = "streamSettings")]
@@ -60,7 +60,7 @@ pub struct Inbounds {
     pub allocate: String, // todo
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CreateInboundRequest {
     pub up: i64,
     pub down: i64,
@@ -71,7 +71,7 @@ pub struct CreateInboundRequest {
     pub expiry_time: i64,
     pub listen: String,
     pub port: u16,
-    pub protocol: Protocol,
+    pub protocol: InboundProtocols,
     pub settings: Settings,
     #[serde(rename = "streamSettings")]
     pub stream_settings: String,
@@ -120,4 +120,15 @@ pub struct Fallback {
     pub path: String,
     pub dest: String,
     pub x_ver: u16,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ClientSettings {
+    pub clients: Vec<User>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ClientRequest {
+    pub id: u64,
+    pub settings: ClientSettings,
 }

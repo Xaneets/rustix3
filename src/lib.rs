@@ -5,7 +5,7 @@ pub use client::Client;
 use models::{ClientStats, Inbounds};
 
 pub mod client;
-pub mod enums;
+pub mod inbounds;
 pub mod error;
 pub mod models;
 
@@ -17,3 +17,5 @@ pub type InboundResponse = Response<Inbounds>;
 pub type ClientsStatsVecResponse = Response<Vec<ClientStats>>;
 pub type ClientsStatsResponse = Response<ClientStats>;
 pub type ClientIpsResponse = Response<String>; // todo ip struct | result [ip, ip] or No ip record string custom deserializer
+pub type DeleteInboundResponse = Response<u64>;
+pub type OnlineClientsResponse = Response<Vec<String>>;

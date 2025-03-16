@@ -6,15 +6,15 @@
 - [x] Client traffics with id
 - [x] TG Send backup to admin
 - [x] Client IP address
-- [ ] Add inbound
-- [ ] Add client to inbound
-- [ ] Update inbound
-- [ ] Update client
-- [ ] Clear client IP address
-- [ ] Reset traffics of all inbound
-- [ ] Reset traffics of all clients in an inbound
-- [ ] Reset client traffics
-- [ ] Delete client
-- [ ] Delete inbound
-- [ ] Delete depleted clients
-- [ ] Online clients
+- [x] Add inbound
+- [x] Add client to inbound
+- [x] Update inbound
+- [x] Update client
+- [x] Clear client IP address
+- [x] Reset traffics of all inbound
+- [x] Reset traffics of all clients in an inbound
+- [x] Reset client traffics
+- [x] Delete client
+- [x] Delete inbound
+- [x] Delete depleted clients
+- [x] Online clients
