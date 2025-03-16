@@ -1,0 +1,20 @@
+# Implemented endpoints
+- [x] login 
+- [x] Inbounds
+- [x] Inbound
+- [x] Client traffics with email
+- [x] Client traffics with id
+- [x] TG Send backup to admin
+- [x] Client IP address
+- [x] Add inbound
+- [x] Add client to inbound
+- [x] Update inbound
+- [x] Update client
+- [x] Clear client IP address
+- [x] Reset traffics of all inbound
+- [x] Reset traffics of all clients in an inbound
+- [x] Reset client traffics
+- [x] Delete client
+- [x] Delete inbound
+- [x] Delete depleted clients
+- [x] Online clients

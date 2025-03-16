@@ -1,6 +1,6 @@
 [package]
 name = "rustix3"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Dmitriy Sergeev <xaneets@gmail.com>"]
 description = "API lib for 3x-ui panel"
@@ -9,10 +9,11 @@ readme = "README.md"
 repository = "https://github.com/Xaneets/rustix3"
 homepage = "https://github.com/Xaneets/rustix3"
 
-keywords = ["rust", "3x-ui", "api"]
+keywords = ["x-ui", "3x-ui", "api", "xray-core", "vpn"]
 categories = ["development-tools"]
 [dependencies]
 log = "0.4.25"
 reqwest = { version = "0.12.12", features = ["json", "cookies"] }
 serde = { version = "1.0.217", features = ["derive"] }
 thiserror = "2.0.11"
+serde_json = "1.0.138"

@@ -11,6 +11,8 @@ pub enum Error {
     Connection(#[source] reqwest::Error),
     #[error("Invalid credentials!")]
     InvalidCred,
+    #[error("Error: {0}!")]
+    OtherError(String),
 }
 
 impl From<reqwest::Error> for Error {
