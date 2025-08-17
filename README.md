@@ -44,6 +44,8 @@ Use the Git dependency directly:
 rustix3 = { git = "https://github.com/Xaneets/rustix3", branch = "main" }
 ```
 
+---
+
 ## Quick start
 
 ```rust
