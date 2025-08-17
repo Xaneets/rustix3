@@ -1,5 +1,6 @@
 use reqwest::StatusCode;
 use thiserror::Error;
+use crate::response_ext::JsonVerboseError;
 
 #[derive(Error, Debug)]
 pub enum Error {
@@ -13,6 +14,8 @@ pub enum Error {
     InvalidCred,
     #[error("Error: {0}!")]
     OtherError(String),
+    #[error(transparent)]
+    JsonVerbose(#[from] JsonVerboseError),
 }
 
 impl From<reqwest::Error> for Error {

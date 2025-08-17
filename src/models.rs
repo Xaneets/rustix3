@@ -1,5 +1,6 @@
 use crate::inbounds::InboundProtocols;
 use serde::{Deserialize, Deserializer, Serialize};
+use serde_with::{json::JsonString, serde_as};
 use std::ops::Not;
 
 #[derive(Debug, Deserialize)]
@@ -60,6 +61,7 @@ pub struct Inbounds {
     pub allocate: String, // todo
 }
 
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CreateInboundRequest {
     pub up: i64,
@@ -72,6 +74,7 @@ pub struct CreateInboundRequest {
     pub listen: String,
     pub port: u16,
     pub protocol: InboundProtocols,
+    #[serde_as(as = "JsonString<_>")]
     pub settings: Settings,
     #[serde(rename = "streamSettings")]
     pub stream_settings: String,
@@ -127,8 +130,10 @@ pub struct ClientSettings {
     pub clients: Vec<User>,
 }
 
+#[serde_as]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ClientRequest {
     pub id: u64,
+    #[serde_as(as = "JsonString<_>")]
     pub settings: ClientSettings,
 }

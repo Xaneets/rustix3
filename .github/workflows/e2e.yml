@@ -9,15 +9,14 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 15
 
     env:
-      RUST_TOOLCHAIN: stable
-      RUST_LOG: debug
       RUST_BACKTRACE: 1
-      3XUI_BASE_URL: http://127.0.0.1:2053/
-      3XUI_USERNAME: admin
-      3XUI_PASSWORD: admin
+      RUST_LOG: trace
+      PANEL_BASE_URL: http://127.0.0.1:2053/
+      PANEL_USERNAME: admin
+      PANEL_PASSWORD: admin
 
     steps:
       - name: Checkout
@@ -31,32 +30,29 @@ jobs:
         with:
           save-if: ${{ github.event_name != 'pull_request' }}
 
-      - name: Start 3x-ui container
+      - name: Start 3x-ui (Docker)
         run: |
+          set -euxo pipefail
           docker pull ghcr.io/mhsanaei/3x-ui:v2.6.6
-          docker run -d --name xui -p 2053:2053 ghcr.io/mhsanaei/3x-ui:v2.6.6
-          for i in {1..60}; do
-            if docker exec xui x-ui status >/dev/null 2>&1; then
-              break
-            fi
-            sleep 2
-          done
-          docker exec xui x-ui setting -username admin -password admin -port 2053 -webBasePath admin
-          docker exec xui x-ui restart
-          for i in {1..60}; do
+          docker rm -f xui >/dev/null 2>&1 || true
+          docker run -d --name xui --network host ghcr.io/mhsanaei/3x-ui:v2.6.6
+
+          for i in $(seq 1 90); do
             code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
               -H 'Content-Type: application/json' \
               -d '{"username":"admin","password":"admin"}' \
               http://127.0.0.1:2053/login || true)
             if [ "$code" = "200" ]; then
               echo "3x-ui is ready"
-              exit 0
+              break
             fi
             sleep 2
+            if [ "$i" = "90" ]; then
+              echo "3x-ui failed to become ready"
+              docker logs xui || true
+              exit 1
+            fi
           done
-          echo "3x-ui failed to become ready"
-          docker logs xui
-          exit 1
 
       - name: Run tests
         run: cargo test --tests -- --nocapture
@@ -64,3 +60,7 @@ jobs:
       - name: Print container logs on failure
         if: failure()
         run: docker logs xui
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f xui || true

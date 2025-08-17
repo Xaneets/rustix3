@@ -1,3 +1,5 @@
+use dotenv::dotenv;
+use env_logger;
 use std::env;
 use tokio::time::{Duration, sleep};
 use uuid::Uuid;
@@ -10,13 +12,20 @@ use rustix3::{
 
 #[tokio::test]
 async fn e2e_full_flow() {
-    let base = env::var("3XUI_BASE_URL").unwrap_or_else(|_| "http://127.0.0.1:2053/".into());
-    let user = env::var("3XUI_USERNAME").unwrap_or_else(|_| "admin".into());
-    let pass = env::var("3XUI_PASSWORD").unwrap_or_else(|_| "admin".into());
+    dotenv().ok();
+    env_logger::init();
+
+    log::info!("Starting full flow");
+    log::trace!("Starting full flow2");
+    let base = env::var("PANEL_BASE_URL").unwrap_or_else(|_| "http://127.0.0.1:2053/".into());
+    let user = env::var("PANEL_USERNAME").unwrap_or_else(|_| "admin".into());
+    let pass = env::var("PANEL_PASSWORD").unwrap_or_else(|_| "admin".into());
 
     let client = Client::new(user, pass, base).await.expect("login");
+    log::info!("connected");
 
     let list_before = client.get_inbounds_list().await.expect("list");
+    log::info!("list_before = {:#?}", list_before);
     assert!(list_before.is_ok());
 
     let remark = format!("e2e-{}", Uuid::new_v4().to_string());
@@ -41,7 +50,12 @@ async fn e2e_full_flow() {
     };
 
     let created = client.add_inbound(&req).await.expect("add_inbound");
+
     assert!(created.is_ok());
+
+    let inbounds = client.get_inbounds_list().await.expect("list");
+    log::info!("inbounds = {:#?}", inbounds);
+
     let inbound_id = created.object.id;
 
     let by_id = client
@@ -85,6 +99,9 @@ async fn e2e_full_flow() {
         .await
         .expect("add_client");
     assert!(add_client.is_ok());
+
+    let inbounds = client.get_inbounds_list().await.expect("list");
+    log::info!("inbounds = {:#?}", inbounds);
 
     sleep(Duration::from_millis(200)).await;
 
@@ -139,11 +156,43 @@ async fn e2e_full_flow() {
     let onlines = client.online_clients().await.expect("online_clients");
     assert!(onlines.is_ok());
 
+    let cuuid = Uuid::new_v4().to_string();
+    let email = format!("{}@example.com", cuuid);
+    let user_obj = User {
+        id: cuuid.clone(),
+        flow: String::new(),
+        email: email.clone(),
+        limit_ip: 0,
+        total_gb: 0,
+        expiry_time: 0,
+        enable: true,
+        tg_id: String::new(),
+        sub_id: String::new(),
+        reset: 0,
+    };
+    let add_client_req = ClientRequest {
+        id: inbound_id,
+        settings: ClientSettings {
+            clients: vec![user_obj.clone()],
+        },
+    };
+    let add_client = client
+        .add_client_to_inbound(&add_client_req)
+        .await
+        .expect("add_client");
+    assert!(add_client.is_ok());
+
+    let inbounds = client.get_inbounds_list().await.expect("list");
+    log::info!("inbounds = {:#?}", inbounds);
+
     let del_client = client
         .delete_client(inbound_id, &cuuid)
         .await
         .expect("delete_client");
     assert!(del_client.is_ok());
+
+    let inbounds = client.get_inbounds_list().await.expect("list");
+    log::info!("inbounds = {:#?}", inbounds);
 
     let del_depleted = client
         .delete_depleted_clients(inbound_id)
