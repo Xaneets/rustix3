@@ -1,3 +1,7 @@
+[![Build](https://github.com/Xaneets/rustix3/actions/workflows/rust.yml/badge.svg)](https://github.com/Xaneets/rustix3/actions/workflows/rust.yml)
+[![e2e](https://github.com/Xaneets/rustix3/actions/workflows/e2e.yml/badge.svg)](https://github.com/Xaneets/rustix3/actions/workflows/e2e.yml)
+[![Crates.io](https://img.shields.io/crates/v/rustix3.svg)](https://crates.io/crates/rustix3)
+
 # Implemented endpoints
 - [x] login 
 - [x] Inbounds

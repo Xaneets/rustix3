@@ -16,7 +16,6 @@ async fn e2e_full_flow() {
     env_logger::init();
 
     log::info!("Starting full flow");
-    log::trace!("Starting full flow2");
     let base = env::var("PANEL_BASE_URL").unwrap_or_else(|_| "http://127.0.0.1:2053/".into());
     let user = env::var("PANEL_USERNAME").unwrap_or_else(|_| "admin".into());
     let pass = env::var("PANEL_PASSWORD").unwrap_or_else(|_| "admin".into());
@@ -208,4 +207,5 @@ async fn e2e_full_flow() {
 
     let list_after = client.get_inbounds_list().await.expect("list_after");
     assert!(list_after.is_ok());
+    log::info!("list_after = {:#?}", list_after);
 }
