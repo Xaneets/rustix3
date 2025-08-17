@@ -117,7 +117,7 @@ impl Client {
         res.json_verbose().await.map_err(Into::into)
     }
 
-    pub async fn send_backup_by_bot(&self) -> Result<()> {
+    pub async fn send_backup_by_bot(&self) -> Result<()> { // todo tests
         let path = vec!["createbackup"];
         let res = self.client.get(self.gen_url(path)?).send().await?;
         if res.status() != StatusCode::OK {
@@ -126,7 +126,7 @@ impl Client {
         Ok(())
     }
 
-    pub async fn get_client_ips(&self, client_email: String) -> Result<ClientIpsResponse> {
+    pub async fn get_client_ips(&self, client_email: String) -> Result<ClientIpsResponse> { // todo tests
         let path = vec!["clientIps", &client_email];
         let res = self.client.post(self.gen_url(path)?).send().await?;
         res.json_verbose().await.map_err(Into::into)
