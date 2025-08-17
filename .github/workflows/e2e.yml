@@ -1,0 +1,66 @@
+name: e2e
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      RUST_BACKTRACE: 1
+      RUST_LOG: trace
+      PANEL_BASE_URL: http://127.0.0.1:2053/
+      PANEL_USERNAME: admin
+      PANEL_PASSWORD: admin
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          save-if: ${{ github.event_name != 'pull_request' }}
+
+      - name: Start 3x-ui (Docker)
+        run: |
+          set -euxo pipefail
+          docker pull ghcr.io/mhsanaei/3x-ui:v2.6.6
+          docker rm -f xui >/dev/null 2>&1 || true
+          docker run -d --name xui --network host ghcr.io/mhsanaei/3x-ui:v2.6.6
+
+          for i in $(seq 1 90); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+              -H 'Content-Type: application/json' \
+              -d '{"username":"admin","password":"admin"}' \
+              http://127.0.0.1:2053/login || true)
+            if [ "$code" = "200" ]; then
+              echo "3x-ui is ready"
+              break
+            fi
+            sleep 2
+            if [ "$i" = "90" ]; then
+              echo "3x-ui failed to become ready"
+              docker logs xui || true
+              exit 1
+            fi
+          done
+
+      - name: Run tests
+        run: cargo test --tests -- --nocapture
+
+      - name: Print container logs on failure
+        if: failure()
+        run: docker logs xui
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f xui || true
