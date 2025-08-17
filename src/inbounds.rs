@@ -210,6 +210,7 @@ pub enum ModeOption {
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[allow(non_camel_case_types)]
 pub enum StreamSettings {
     TlsStreamSettings,
     RealityStreamSettings,

@@ -4,7 +4,6 @@ use crate::error::Error;
 use crate::models::Response;
 pub use client::Client;
 use models::{ClientStats, Inbounds};
-use serde::{Deserialize, Serialize};
 
 pub mod client;
 pub mod error;

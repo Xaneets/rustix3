@@ -4,10 +4,10 @@ use super::{
 };
 use crate::error::Error;
 use crate::models::{ClientRequest, CreateInboundRequest};
-use log::{debug, error, trace};
+use crate::response_ext::ResponseJsonVerboseExt;
+use log::{debug, error};
 use reqwest::{Client as RClient, IntoUrl, StatusCode, Url};
 use serde::Serialize;
-use crate::response_ext::ResponseJsonVerboseExt;
 
 type LoginResponse = NullObjectResponse;
 
@@ -76,7 +76,7 @@ impl Client {
             .await?;
         match response.status() {
             StatusCode::NOT_FOUND => {
-                return Err(Error::NotFound(response.error_for_status().unwrap_err()))
+                return Err(Error::NotFound(response.error_for_status().unwrap_err()));
             }
             StatusCode::OK => {}
             e => {

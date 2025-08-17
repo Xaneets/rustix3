@@ -1,6 +1,6 @@
+use crate::response_ext::JsonVerboseError;
 use reqwest::StatusCode;
 use thiserror::Error;
-use crate::response_ext::JsonVerboseError;
 
 #[derive(Error, Debug)]
 pub enum Error {
