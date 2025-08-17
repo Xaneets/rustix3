@@ -13,10 +13,8 @@ trap cleanup EXIT
 docker pull "$IMG"
 docker rm -f "$NAME" >/dev/null 2>&1 || true
 
-# РЕКОМЕНДУЕМО по докам — host-network; так порт 2053 будет доступен напрямую
 docker run -d --name "$NAME" --network host "$IMG"
 
-# Ожидаем поднятия панели и работоспособности /login (доки: логин admin/admin)
 for i in $(seq 1 90); do
   code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
     -H 'Content-Type: application/json' \
