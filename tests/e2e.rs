@@ -1,5 +1,4 @@
 use dotenv::dotenv;
-use env_logger;
 use std::env;
 use tokio::time::{Duration, sleep};
 use uuid::Uuid;
@@ -27,7 +26,7 @@ async fn e2e_full_flow() {
     log::info!("list_before = {:#?}", list_before);
     assert!(list_before.is_ok());
 
-    let remark = format!("e2e-{}", Uuid::new_v4().to_string());
+    let remark = format!("e2e-{}", Uuid::new_v4());
     let req = CreateInboundRequest {
         up: 0,
         down: 0,
