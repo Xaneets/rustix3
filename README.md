@@ -7,7 +7,8 @@
 Unofficial Rust client for the **3x-ui** panel API (Xray-core).  
 Provides typed models and high-level methods for common panel operations.
 
-> Note: Some 3x-ui endpoints expect certain nested structures to be sent as **JSON strings** (e.g., inbound `settings`). The client models handle these specifics transparently.
+> Note: Some 3x-ui endpoints expect certain nested structures to be sent as **JSON strings** (e.g., inbound `settings`).
+> The client models handle these specifics transparently.
 
 ---
 
@@ -32,7 +33,32 @@ Provides typed models and high-level methods for common panel operations.
 - [x] Delete inbound
 - [x] Delete depleted clients
 - [x] Online clients
+- [ ] Import inbounds
+- [x] Last online
+- [ ] del Client By Email
+- [x] Server status
+- [x] Server get DB
+- [x] get Xray Version
+- [x] get Config Json
+- [x] cpu History
+- [x] get New UUID
+- [x] get New X25519 Cert
+- [x] get New mldsa65
+- [x] get New mlkem768
+- [x] get New Vless Enc
+- [x] stop Xray Service
+- [x] restart Xray Service
+- [x] install Xray version
+- [x] update Geofile
+- [ ] updateGeofile/{fileName}
+- [ ] logs/{count}
+- [ ] xraylogs/{count}
+- [x] importDB
+- [ ] get New Ech Cert
 
+
+- ✅
+- ❌
 ---
 
 ## Installation

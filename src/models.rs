@@ -22,7 +22,7 @@ impl<T> Response<T> {
     }
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct ClientStats {
     pub id: u64,
     #[serde(rename = "inboundId")]
@@ -37,7 +37,7 @@ pub struct ClientStats {
     pub reset: i64,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct Inbounds {
     pub id: u64,
     pub up: u128,
@@ -58,7 +58,7 @@ pub struct Inbounds {
     pub stream_settings: String, // todo
     pub tag: String,
     pub sniffing: String, // todo
-    pub allocate: String, // todo
+    pub allocate: Option<String>, // todo
 }
 
 #[serde_as]
@@ -108,9 +108,16 @@ pub struct User {
     pub total_gb: u32,
     pub expiry_time: u64,
     pub enable: bool,
-    pub tg_id: String,
+    pub tg_id: TgId,
     pub sub_id: String,
     pub reset: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+#[serde(untagged)]
+pub enum TgId {
+    String(String),
+    Int(u32),
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -136,4 +143,15 @@ pub struct ClientRequest {
     pub id: u64,
     #[serde_as(as = "JsonString<_>")]
     pub settings: ClientSettings,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct CpuHistoryPoint {
+    pub cpu: f64,
+    pub t: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Uuid {
+    pub uuid: String
 }

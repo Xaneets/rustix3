@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-IMG="ghcr.io/mhsanaei/3x-ui:v2.6.6"
+IMG="ghcr.io/mhsanaei/3x-ui:v2.8.3"
 NAME="xui"
 BASE="http://127.0.0.1:2053"
 USER="admin"
