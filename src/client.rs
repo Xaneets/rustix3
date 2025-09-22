@@ -63,7 +63,7 @@ impl Client {
         self.gen_url_with_base(&["panel", "api", "server"], segs)
     }
 
-    fn gen_url(&self, segs: Vec<&str>) -> Result<Url> {
+    fn gen_inbounds_url(&self, segs: Vec<&str>) -> Result<Url> {
         let base_segs = vec!["panel", "api", "inbounds"];
         self.gen_url_with_base(&base_segs, segs)
     }
@@ -100,20 +100,20 @@ impl Client {
 
     pub async fn get_inbounds_list(&self) -> Result<InboundsResponse> {
         let path = vec!["list"];
-        let res = self.client.get(self.gen_url(path)?).send().await?;
+        let res = self.client.get(self.gen_inbounds_url(path)?).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn get_inbound_by_id(&self, inbound_id: u64) -> Result<InboundResponse> {
         let id = inbound_id.to_string();
         let path = vec!["get", &id];
-        let res = self.client.get(self.gen_url(path)?).send().await?;
+        let res = self.client.get(self.gen_inbounds_url(path)?).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn get_client_traffic_by_email(&self, email: String) -> Result<ClientsStatsResponse> {
         let path = vec!["getClientTraffics", &email];
-        let res = self.client.get(self.gen_url(path)?).send().await?; // todo check is null return user not found
+        let res = self.client.get(self.gen_inbounds_url(path)?).send().await?; // todo check is null return user not found
         res.json_verbose().await.map_err(Into::into)
     }
 
@@ -121,14 +121,14 @@ impl Client {
         // todo id to uuid
         let id = id.to_string();
         let path = vec!["getClientTrafficsById", &id];
-        let res = self.client.get(self.gen_url(path)?).send().await?;
+        let res = self.client.get(self.gen_inbounds_url(path)?).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn send_backup_by_bot(&self) -> Result<()> {
         // todo tests
         let path = vec!["createbackup"];
-        let res = self.client.get(self.gen_url(path)?).send().await?;
+        let res = self.client.get(self.gen_inbounds_url(path)?).send().await?;
         if res.status() != StatusCode::OK {
             return Err(Error::OtherError("Todo".into()));
         }
@@ -138,18 +138,18 @@ impl Client {
     pub async fn get_client_ips(&self, client_email: String) -> Result<ClientIpsResponse> {
         // todo tests
         let path = vec!["clientIps", &client_email];
-        let res = self.client.post(self.gen_url(path)?).send().await?;
+        let res = self.client.post(self.gen_inbounds_url(path)?).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn add_inbound(&self, req: &CreateInboundRequest) -> Result<InboundResponse> {
-        let url = self.gen_url(vec!["add"])?;
+        let url = self.gen_inbounds_url(vec!["add"])?;
         let res = self.client.post(url).json(req).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn add_client_to_inbound(&self, req: &ClientRequest) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec!["addClient"])?;
+        let url = self.gen_inbounds_url(vec!["addClient"])?;
         let res = self.client.post(url).json(req).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
@@ -159,7 +159,7 @@ impl Client {
         inbound_id: u64,
         req: &CreateInboundRequest,
     ) -> Result<InboundResponse> {
-        let url = self.gen_url(vec!["update", &inbound_id.to_string()])?;
+        let url = self.gen_inbounds_url(vec!["update", &inbound_id.to_string()])?;
         let res = self.client.post(url).json(req).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
@@ -169,25 +169,25 @@ impl Client {
         uuid: &str,
         req: &ClientRequest,
     ) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec!["updateClient", uuid])?;
+        let url = self.gen_inbounds_url(vec!["updateClient", uuid])?;
         let res = self.client.post(url).json(req).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn clear_client_ips(&self, email: &str) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec!["clearClientIps", email])?;
+        let url = self.gen_inbounds_url(vec!["clearClientIps", email])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn reset_all_inbound_traffics(&self) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec!["resetAllTraffics"])?;
+        let url = self.gen_inbounds_url(vec!["resetAllTraffics"])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn reset_all_client_traffics(&self, inbound_id: u64) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec!["resetAllClientTraffics", &inbound_id.to_string()])?;
+        let url = self.gen_inbounds_url(vec!["resetAllClientTraffics", &inbound_id.to_string()])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
@@ -197,37 +197,37 @@ impl Client {
         inbound_id: u64,
         email: &str,
     ) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec![&inbound_id.to_string(), "resetClientTraffic", email])?;
+        let url = self.gen_inbounds_url(vec![&inbound_id.to_string(), "resetClientTraffic", email])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn delete_client(&self, inbound_id: u64, uuid: &str) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec![&inbound_id.to_string(), "delClient", uuid])?;
+        let url = self.gen_inbounds_url(vec![&inbound_id.to_string(), "delClient", uuid])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn delete_inbound(&self, inbound_id: u64) -> Result<DeleteInboundResponse> {
-        let url = self.gen_url(vec!["del", &inbound_id.to_string()])?;
+        let url = self.gen_inbounds_url(vec!["del", &inbound_id.to_string()])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn delete_depleted_clients(&self, inbound_id: u64) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec!["delDepletedClients", &inbound_id.to_string()])?;
+        let url = self.gen_inbounds_url(vec!["delDepletedClients", &inbound_id.to_string()])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     pub async fn online_clients(&self) -> Result<OnlineClientsResponse> {
-        let url = self.gen_url(vec!["onlines"])?;
+        let url = self.gen_inbounds_url(vec!["onlines"])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
     async fn import_inbound(&self, inbound: &Inbounds) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec!["import"])?;
+        let url = self.gen_inbounds_url(vec!["import"])?;
         let json_str = serde_json::to_string(inbound)
             .map_err(|e| Error::OtherError(format!("serialize inbound: {e}")))?;
         let form = Form::new().text("data", json_str);
@@ -236,7 +236,7 @@ impl Client {
     }
 
     pub async fn get_last_online(&self) -> Result<OptStringVecResponse> {
-        let url = self.gen_url(vec!["onlines"])?;
+        let url = self.gen_inbounds_url(vec!["onlines"])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
@@ -246,7 +246,7 @@ impl Client {
         inbound_id: u64,
         email: &str,
     ) -> Result<NullObjectResponse> {
-        let url = self.gen_url(vec![&inbound_id.to_string(), "delClientByEmail", email])?;
+        let url = self.gen_inbounds_url(vec![&inbound_id.to_string(), "delClientByEmail", email])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }

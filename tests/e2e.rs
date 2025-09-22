@@ -352,7 +352,6 @@ async fn e2e_full_flow() {
 
     // let logs = client.logs(50).await.expect("logs_count");
     // assert!(logs.is_ok()); // todo
-    // может прийти пустая строка — просто проверим, что ответ формально ок
 
     // let xlogs = client.xray_logs(50).await.expect("xray_logs_count");
     // assert!(xlogs.is_ok()); // todo

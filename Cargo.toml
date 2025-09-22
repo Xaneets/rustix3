@@ -11,6 +11,7 @@ homepage = "https://github.com/Xaneets/rustix3"
 
 keywords = ["x-ui", "3x-ui", "api", "xray-core", "vpn"]
 categories = ["development-tools"]
+
 [dependencies]
 futures = "0.3.31"
 log = "0.4.25"
