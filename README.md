@@ -14,51 +14,49 @@ Provides typed models and high-level methods for common panel operations.
 
 ## Implemented endpoints
 
-- [x] login
-- [x] Inbounds
-- [x] Inbound
-- [x] Client traffics with email
-- [x] Client traffics with id
-- [x] TG Send backup to admin
-- [x] Client IP address
-- [x] Add inbound
-- [x] Add client to inbound
-- [x] Update inbound
-- [x] Update client
-- [x] Clear client IP address
-- [x] Reset traffics of all inbound
-- [x] Reset traffics of all clients in an inbound
-- [x] Reset client traffics
-- [x] Delete client
-- [x] Delete inbound
-- [x] Delete depleted clients
-- [x] Online clients
-- [ ] Import inbounds
-- [x] Last online
-- [ ] del Client By Email
-- [x] Server status
-- [x] Server get DB
-- [x] get Xray Version
-- [x] get Config Json
-- [x] cpu History
-- [x] get New UUID
-- [x] get New X25519 Cert
-- [x] get New mldsa65
-- [x] get New mlkem768
-- [x] get New Vless Enc
-- [x] stop Xray Service
-- [x] restart Xray Service
-- [x] install Xray version
-- [x] update Geofile
-- [ ] updateGeofile/{fileName}
-- [ ] logs/{count}
-- [ ] xraylogs/{count}
-- [x] importDB
-- [ ] get New Ech Cert
+- ✅ login
+- ✅ Inbounds
+- ✅ Inbound
+- ✅ Client traffics with email
+- ✅ Client traffics with id
+- ✅ TG Send backup to admin
+- ✅ Client IP address
+- ✅ Add inbound
+- ✅ Add client to inbound
+- ✅ Update inbound
+- ✅ Update client
+- ✅ Clear client IP address
+- ✅ Reset traffics of all inbound
+- ✅ Reset traffics of all clients in an inbound
+- ✅ Reset client traffics
+- ✅ Delete client
+- ✅ Delete inbound
+- ✅ Delete depleted clients
+- ✅ Online clients
+- ❌ Import inbounds
+- ✅ Last online
+- ❌ del Client By Email
+- ✅ Server status
+- ✅ Server get DB
+- ✅ get Xray Version
+- ✅ get Config Json
+- ✅ cpu History
+- ✅ get New UUID
+- ✅ get New X25519 Cert
+- ✅ get New mldsa65
+- ✅ get New mlkem768
+- ✅ get New Vless Enc
+- ✅ stop Xray Service
+- ✅ restart Xray Service
+- ✅ install Xray version
+- ✅ update Geofile
+- ❌ updateGeofile/{fileName}
+- ❌ logs/{count}
+- ❌ xraylogs/{count}
+- ✅ importDB
+- ❌ get New Ech Cert
 
 
-- ✅
-- ❌
 ---
 
 ## Installation
