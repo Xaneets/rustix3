@@ -33,9 +33,9 @@ jobs:
       - name: Start 3x-ui (Docker)
         run: |
           set -euxo pipefail
-          docker pull ghcr.io/mhsanaei/3x-ui:v2.8.3
+          docker pull ghcr.io/mhsanaei/3x-ui:v2.8.4
           docker rm -f xui >/dev/null 2>&1 || true
-          docker run -d --name xui --network host ghcr.io/mhsanaei/3x-ui:v2.8.3
+          docker run -d --name xui --network host ghcr.io/mhsanaei/3x-ui:v2.8.4
 
           for i in $(seq 1 90); do
             code=$(curl -s -o /dev/null -w "%{http_code}" -X POST \

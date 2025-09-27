@@ -33,28 +33,28 @@ Provides typed models and high-level methods for common panel operations.
 - ✅ Delete inbound
 - ✅ Delete depleted clients
 - ✅ Online clients
-- ❌ Import inbounds
+- ✅ Import inbounds
 - ✅ Last online
-- ❌ del Client By Email
+- ✅ Del Client By Email
 - ✅ Server status
 - ✅ Server get DB
-- ✅ get Xray Version
-- ✅ get Config Json
-- ✅ cpu History
-- ✅ get New UUID
-- ✅ get New X25519 Cert
-- ✅ get New mldsa65
-- ✅ get New mlkem768
-- ✅ get New Vless Enc
-- ✅ stop Xray Service
-- ✅ restart Xray Service
-- ✅ install Xray version
-- ✅ update Geofile
-- ❌ updateGeofile/{fileName}
-- ❌ logs/{count}
-- ❌ xraylogs/{count}
-- ✅ importDB
-- ❌ get New Ech Cert
+- ✅ Get Xray Version
+- ✅ Get Config Json
+- ✅ Cpu History
+- ✅ Get New UUID
+- ✅ Get New X25519 Cert
+- ✅ Get New mldsa65
+- ✅ Get New mlkem768
+- ✅ Get New Vless Enc
+- ✅ Stop Xray Service
+- ✅ Restart Xray Service
+- ✅ Install Xray version
+- ✅ Update Geofile
+- ✅ Update Geofile/{fileName}
+- ✅ Logs
+- ✅ Xraylogs
+- ✅ ImportDB
+- ✅ Get New Ech Cert
 
 
 ---

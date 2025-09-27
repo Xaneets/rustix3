@@ -214,7 +214,22 @@ async fn e2e_full_flow() {
 
     let cuuid = Uuid::new_v4().to_string();
     let email = "testclient".to_string();
-    let user_obj = User {
+    let user_obj1 = User {
+        id: cuuid.clone(),
+        flow: String::new(),
+        email: email.clone(),
+        limit_ip: 0,
+        total_gb: 0,
+        expiry_time: 0,
+        enable: true,
+        tg_id: TgId::Int(0),
+        sub_id: String::new(),
+        reset: 0,
+    };
+
+    let cuuid = Uuid::new_v4().to_string();
+    let email = "testclient2".to_string();
+    let user_obj2 = User {
         id: cuuid.clone(),
         flow: String::new(),
         email: email.clone(),
@@ -239,7 +254,7 @@ async fn e2e_full_flow() {
         port: 31002,
         protocol: InboundProtocols::Vless,
         settings: Settings {
-            clients: vec![user_obj.clone()],
+            clients: vec![user_obj1, user_obj2],
             decryption: "none".into(),
             fallbacks: Vec::<Fallback>::new(),
         },
@@ -258,11 +273,12 @@ async fn e2e_full_flow() {
     assert!(tmp.is_ok());
     log::info!("tmp inbound = {:#?}", tmp);
 
-    // let del_by_email = client
-    //     .del_client_by_email(tmp_inbound_id, &email)
-    //     .await
-    //     .expect("del_client_by_email");
-    // assert!(del_by_email.is_ok()); // todo
+    let del_by_email = client
+        .del_client_by_email(tmp_inbound_id, &email)
+        .await
+        .expect("del_client_by_email");
+
+    assert!(del_by_email.is_ok());
 
     let res = client
         .delete_inbound(tmp_inbound_id)
@@ -276,7 +292,6 @@ async fn e2e_full_flow() {
 
     let db_bytes = client.server_get_db().await.expect("server_get_db");
     assert!(!db_bytes.is_empty(), "db should not be empty");
-
 
     let imported_db = client
         .import_db_upload("file", db_bytes.clone())
@@ -293,7 +308,6 @@ async fn e2e_full_flow() {
 
     let cpu_hist = client.cpu_history(2).await.expect("cpu_history_1min"); // todo bucket
     assert!(cpu_hist.is_ok());
-
 
     if let Some(first) = cpu_hist.object.first() {
         assert!(first.t > 0, "cpu history timestamp should be > 0");
@@ -317,8 +331,8 @@ async fn e2e_full_flow() {
     let venc = client.get_new_vless_enc().await.expect("get_new_vless_enc");
     assert!(venc.is_ok());
 
-    // let ech = client.get_new_ech_cert().await.expect("get_new_ech_cert");
-    // assert!(ech.is_ok()); //  todo
+    let ech = client.get_new_ech_cert().await.expect("get_new_ech_cert");
+    assert!(ech.is_ok()); 
 
     let stopped = client.stop_xray_service().await.expect("stop_xray_service");
     assert!(stopped.is_ok());
@@ -344,18 +358,17 @@ async fn e2e_full_flow() {
     let geo_all = client.update_geofile().await.expect("update_geofile");
     assert!(geo_all.is_ok());
 
-    // let geo_one = client
-    //     .update_geofile_by_name("geoip")
-    //     .await
-    //     .expect("update_geofile_by_name");
-    // assert!(geo_one.is_ok()); // todo
+    let geo_one = client
+        .update_geofile_by_name("geoip.dat")
+        .await
+        .expect("update_geofile_by_name");
+    assert!(geo_one.is_ok());
 
-    // let logs = client.logs(50).await.expect("logs_count");
-    // assert!(logs.is_ok()); // todo
+    let logs = client.logs(50).await.expect("logs_count");
+    assert!(logs.is_ok());
 
-    // let xlogs = client.xray_logs(50).await.expect("xray_logs_count");
-    // assert!(xlogs.is_ok()); // todo
-
+    let xlogs = client.xray_logs(50).await.expect("xray_logs_count");
+    assert!(xlogs.is_ok());
 
     let remark = format!("e2e-{}", Uuid::new_v4());
     let req = CreateInboundRequest {
@@ -382,15 +395,16 @@ async fn e2e_full_flow() {
 
     assert!(created.is_ok());
 
-
     let inbds = client.get_inbounds_list().await.expect("list_for_import");
     assert!(inbds.is_ok());
 
     log::info!("{:#?}", inbds);
 
-    // let import_inb = client // todo fix cannot unmarshal object into Go struct field Inbound.settings of type string
-    //     .import_inbound(&inbds.object.get(0).expect("object"))
-    //     .await
-    //     .expect("import_inbounds");
-    // assert!(import_inb.is_ok());
+    let mut import = inbds.object[0].clone();
+    import.port = 30222;
+    let import_inb = client
+        .import_inbound(&import)
+        .await
+        .expect("import_inbounds");
+    assert!(import_inb.is_ok());
 }

@@ -226,7 +226,7 @@ impl Client {
         res.json_verbose().await.map_err(Into::into)
     }
 
-    async fn import_inbound(&self, inbound: &Inbounds) -> Result<NullObjectResponse> {
+    pub async fn import_inbound(&self, inbound: &Inbounds) -> Result<InboundResponse> {
         let url = self.gen_inbounds_url(vec!["import"])?;
         let json_str = serde_json::to_string(inbound)
             .map_err(|e| Error::OtherError(format!("serialize inbound: {e}")))?;
@@ -241,7 +241,7 @@ impl Client {
         res.json_verbose().await.map_err(Into::into)
     }
 
-    async fn del_client_by_email(
+    pub async fn del_client_by_email(
         &self,
         inbound_id: u64,
         email: &str,
@@ -311,9 +311,9 @@ impl Client {
         res.json_verbose().await.map_err(Into::into)
     }
 
-    async fn get_new_ech_cert(&self) -> Result<JsonResponse> {
+    pub async fn get_new_ech_cert(&self) -> Result<JsonResponse> {
         let url = self.gen_server_url(vec!["getNewEchCert"])?;
-        let res = self.client.get(url).send().await?;
+        let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
@@ -341,21 +341,21 @@ impl Client {
         res.json_verbose().await.map_err(Into::into)
     }
 
-    async fn update_geofile_by_name(&self, file_name: &str) -> Result<NullObjectResponse> {
+    pub async fn update_geofile_by_name(&self, file_name: &str) -> Result<NullObjectResponse> {
         let url = self.gen_server_url(vec!["updateGeofile", file_name])?;
         let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
-    async fn logs(&self, count: u32) -> Result<StringResponse> {
+    pub async fn logs(&self, count: u32) -> Result<StringVecResponse> {
         let url = self.gen_server_url(vec!["logs", &count.to_string()])?;
-        let res = self.client.get(url).send().await?;
+        let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 
-    async fn xray_logs(&self, count: u32) -> Result<StringResponse> {
+    pub async fn xray_logs(&self, count: u32) -> Result<OptStringVecResponse> {
         let url = self.gen_server_url(vec!["xraylogs", &count.to_string()])?;
-        let res = self.client.get(url).send().await?;
+        let res = self.client.post(url).send().await?;
         res.json_verbose().await.map_err(Into::into)
     }
 

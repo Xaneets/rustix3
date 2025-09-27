@@ -1,9 +1,9 @@
 use crate::inbounds::InboundProtocols;
-use serde::{Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_with::{json::JsonString, serde_as};
 use std::ops::Not;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 pub struct Response<T> {
     success: bool,
     #[serde(rename = "msg")]
@@ -22,7 +22,7 @@ impl<T> Response<T> {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ClientStats {
     pub id: u64,
     #[serde(rename = "inboundId")]
@@ -37,7 +37,7 @@ pub struct ClientStats {
     pub reset: i64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Inbounds {
     pub id: u64,
     pub up: u128,
@@ -52,7 +52,10 @@ pub struct Inbounds {
     pub listen: String,
     pub port: u16,
     pub protocol: InboundProtocols,
-    #[serde(deserialize_with = "deserialize_settings")]
+    #[serde(
+        deserialize_with = "de_settings_from_str_or_map",
+        serialize_with   = "se_settings_as_str"
+    )]
     pub settings: Settings,
     #[serde(rename = "streamSettings")]
     pub stream_settings: String, // todo
@@ -82,19 +85,35 @@ pub struct CreateInboundRequest {
     pub allocate: String,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Settings {
     pub clients: Vec<User>,
     pub decryption: String, // todo
     pub fallbacks: Vec<Fallback>,
 }
 
-fn deserialize_settings<'de, D>(deserializer: D) -> Result<Settings, D::Error>
+fn de_settings_from_str_or_map<'de, D>(d: D) -> Result<Settings, D::Error>
 where
     D: Deserializer<'de>,
 {
-    let settings_str: String = Deserialize::deserialize(deserializer)?;
-    serde_json::from_str(&settings_str).map_err(serde::de::Error::custom)
+    #[derive(Deserialize)]
+    #[serde(untagged)]
+    enum Wire {
+        Str(String),
+        Map(Settings),
+    }
+    match Wire::deserialize(d)? {
+        Wire::Str(s) => serde_json::from_str(&s).map_err(serde::de::Error::custom),
+        Wire::Map(m) => Ok(m),
+    }
+}
+
+fn se_settings_as_str<S>(value: &Settings, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let json = serde_json::to_string(value).map_err(serde::ser::Error::custom)?;
+    s.serialize_str(&json)
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -120,7 +139,7 @@ pub enum TgId {
     Int(u32),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Fallback {
     #[serde(rename = "SNI")]
