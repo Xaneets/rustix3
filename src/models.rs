@@ -20,6 +20,14 @@ impl<T> Response<T> {
     pub fn is_err(&self) -> bool {
         self.success.not()
     }
+
+    pub fn into_result(self) -> crate::Result<T> {
+        if self.success {
+            Ok(self.object)
+        } else {
+            Err(crate::error::Error::OtherError(self.message))
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -54,13 +62,13 @@ pub struct Inbounds {
     pub protocol: InboundProtocols,
     #[serde(
         deserialize_with = "de_settings_from_str_or_map",
-        serialize_with   = "se_settings_as_str"
+        serialize_with = "se_settings_as_str"
     )]
     pub settings: Settings,
     #[serde(rename = "streamSettings")]
     pub stream_settings: String, // todo
     pub tag: String,
-    pub sniffing: String, // todo
+    pub sniffing: String,         // todo
     pub allocate: Option<String>, // todo
 }
 
@@ -172,5 +180,5 @@ pub struct CpuHistoryPoint {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Uuid {
-    pub uuid: String
+    pub uuid: uuid::Uuid,
 }
