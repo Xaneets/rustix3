@@ -27,4 +27,4 @@ pub type JsonResponse = Response<Value>;
 pub type OptStringVecResponse = Response<Option<Vec<String>>>;
 pub type StringVecResponse = Response<Vec<String>>;
 pub type CpuHistoryResponse = Response<Vec<CpuHistoryPoint>>;
-pub type UuidRespose = Response<Uuid>;
+pub type UuidResponse = Response<Uuid>;

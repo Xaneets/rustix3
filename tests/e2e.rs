@@ -1,3 +1,4 @@
+use anyhow::Context;
 use dotenv::dotenv;
 use std::env;
 use tokio::time::{Duration, sleep};
@@ -11,7 +12,7 @@ use rustix3::{
 };
 
 #[tokio::test]
-async fn e2e_full_flow() {
+async fn e2e_full_flow() -> anyhow::Result<()> {
     dotenv().ok();
     env_logger::init();
 
@@ -20,12 +21,11 @@ async fn e2e_full_flow() {
     let user = env::var("PANEL_USERNAME").unwrap_or_else(|_| "admin".into());
     let pass = env::var("PANEL_PASSWORD").unwrap_or_else(|_| "admin".into());
 
-    let client = Client::new(user, pass, base).await.expect("login");
+    let client = Client::new(user, pass, base).await.context("login")?;
     log::info!("connected");
 
-    let list_before = client.get_inbounds_list().await.expect("list");
+    let list_before = client.get_inbounds_list().await.context("list")?;
     log::info!("list_before = {:#?}", list_before);
-    assert!(list_before.is_ok());
 
     let remark = format!("e2e-{}", Uuid::new_v4());
     let req = CreateInboundRequest {
@@ -48,30 +48,26 @@ async fn e2e_full_flow() {
         allocate: "{}".into(),
     };
 
-    let created = client.add_inbound(&req).await.expect("add_inbound");
+    let created = client.add_inbound(&req).await.context("add_inbound")?;
 
-    assert!(created.is_ok());
-
-    let inbounds = client.get_inbounds_list().await.expect("list");
+    let inbounds = client.get_inbounds_list().await.context("list")?;
     log::info!("inbounds = {:#?}", inbounds);
 
-    let inbound_id = created.object.id;
+    let inbound_id = created.id;
 
     let by_id = client
         .get_inbound_by_id(inbound_id)
         .await
-        .expect("get_by_id");
-    assert!(by_id.is_ok());
-    assert_eq!(by_id.object.remark, remark);
+        .context("get_by_id")?;
+    assert_eq!(by_id.remark, remark);
 
     let mut updated_req = req;
     updated_req.remark = format!("{}-upd", remark);
     let updated = client
         .update_inbound(inbound_id, &updated_req)
         .await
-        .expect("update_inbound");
-    assert!(updated.is_ok());
-    assert_eq!(updated.object.remark, updated_req.remark);
+        .context("update_inbound")?;
+    assert_eq!(updated.remark, updated_req.remark);
 
     let cuuid = Uuid::new_v4().to_string();
     let email = format!("{}@example.com", cuuid);
@@ -93,13 +89,12 @@ async fn e2e_full_flow() {
             clients: vec![user_obj.clone()],
         },
     };
-    let add_client = client
+    client
         .add_client_to_inbound(&add_client_req)
         .await
-        .expect("add_client");
-    assert!(add_client.is_ok());
+        .context("add_client")?;
 
-    let inbounds = client.get_inbounds_list().await.expect("list");
+    let inbounds = client.get_inbounds_list().await.context("list")?;
     log::info!("inbounds = {:#?}", inbounds);
 
     sleep(Duration::from_millis(200)).await;
@@ -107,15 +102,14 @@ async fn e2e_full_flow() {
     let traffic_by_email = client
         .get_client_traffic_by_email(email.clone())
         .await
-        .expect("traffic_by_email");
-    assert!(traffic_by_email.is_ok());
-    assert_eq!(traffic_by_email.object.email, email);
+        .context("traffic_by_email")?;
+    assert_eq!(traffic_by_email.email, email);
 
     let traffic_by_id = client
         .get_client_traffic_by_id(cuuid.clone())
         .await
-        .expect("traffic_by_id");
-    assert!(traffic_by_id.is_ok());
+        .context("traffic_by_id")?;
+    log::info!("traffic_by_id = {:#?}", traffic_by_id);
 
     let mut updated_user = user_obj;
     updated_user.limit_ip = 1;
@@ -125,35 +119,31 @@ async fn e2e_full_flow() {
             clients: vec![updated_user],
         },
     };
-    let upd_client = client
+    client
         .update_client(&cuuid, &upd_client_req)
         .await
-        .expect("update_client");
-    assert!(upd_client.is_ok());
+        .context("update_client")?;
 
-    let clear_ips = client.clear_client_ips(&email).await.expect("clear_ips");
-    assert!(clear_ips.is_ok());
+    client.clear_client_ips(&email).await.context("clear_ips")?;
 
-    let reset_client = client
+    client
         .reset_client_traffic(inbound_id, &email)
         .await
-        .expect("reset_client");
-    assert!(reset_client.is_ok());
+        .context("reset_client")?;
 
-    let reset_all_clients = client
+    client
         .reset_all_client_traffics(inbound_id)
         .await
-        .expect("reset_all_clients");
-    assert!(reset_all_clients.is_ok());
+        .context("reset_all_clients")?;
 
-    let reset_all_inbounds = client
+    client
         .reset_all_inbound_traffics()
         .await
-        .expect("reset_all_inbounds");
-    assert!(reset_all_inbounds.is_ok());
+        .context("reset_all_inbounds")?;
 
-    let onlines = client.online_clients().await.expect("online_clients");
-    assert!(onlines.is_ok());
+    let onlines = client.online_clients().await.context("online_clients")?;
+
+    log::info!("onlines = {:#?}", onlines);
 
     let cuuid = Uuid::new_v4().to_string();
     let email = format!("{}@example.com", cuuid);
@@ -175,42 +165,39 @@ async fn e2e_full_flow() {
             clients: vec![user_obj.clone()],
         },
     };
-    let add_client = client
+    client
         .add_client_to_inbound(&add_client_req)
         .await
-        .expect("add_client");
-    assert!(add_client.is_ok());
+        .context("add_client")?;
 
-    let inbounds = client.get_inbounds_list().await.expect("list");
+    let inbounds = client.get_inbounds_list().await.context("list")?;
     log::info!("inbounds = {:#?}", inbounds);
 
-    let del_client = client
+    client
         .delete_client(inbound_id, &cuuid)
         .await
-        .expect("delete_client");
-    assert!(del_client.is_ok());
+        .context("delete_client")?;
 
-    let inbounds = client.get_inbounds_list().await.expect("list");
+    let inbounds = client.get_inbounds_list().await.context("list")?;
     log::info!("inbounds = {:#?}", inbounds);
 
-    let del_depleted = client
+    client
         .delete_depleted_clients(inbound_id)
         .await
-        .expect("delete_depleted");
-    assert!(del_depleted.is_ok());
+        .context("delete_depleted")?;
 
     let del_inbound = client
         .delete_inbound(inbound_id)
         .await
-        .expect("delete_inbound");
-    assert!(del_inbound.is_ok());
+        .context("delete_inbound")?;
 
-    let list_after = client.get_inbounds_list().await.expect("list_after");
-    assert!(list_after.is_ok());
+    log::info!("del_inbound = {:#?}", del_inbound);
+
+    let list_after = client.get_inbounds_list().await.context("list_after")?;
     log::info!("list_after = {:#?}", list_after);
 
-    let last_online = client.get_last_online().await.expect("last_online");
-    assert!(last_online.is_ok());
+    let last_online = client.get_last_online().await.context("last_online")?;
+    log::info!("last_online = {:#?}", last_online);
 
     let cuuid = Uuid::new_v4().to_string();
     let email = "testclient".to_string();
@@ -265,110 +252,111 @@ async fn e2e_full_flow() {
     let tmp_created = client
         .add_inbound(&tmp_inb_req)
         .await
-        .expect("add_inbound_tmp");
-    assert!(tmp_created.is_ok());
-    let tmp_inbound_id = tmp_created.object.id;
+        .context("add_inbound_tmp")?;
+    let tmp_inbound_id = tmp_created.id;
 
-    let tmp = client.get_inbounds_list().await.expect("tmp inbound");
-    assert!(tmp.is_ok());
+    let tmp = client.get_inbounds_list().await.context("tmp inbound")?;
     log::info!("tmp inbound = {:#?}", tmp);
 
-    let del_by_email = client
+    client
         .del_client_by_email(tmp_inbound_id, &email)
         .await
-        .expect("del_client_by_email");
-
-    assert!(del_by_email.is_ok());
+        .context("del_client_by_email")?;
 
     let res = client
         .delete_inbound(tmp_inbound_id)
         .await
-        .expect("del_tmp_inbound");
+        .context("del_tmp_inbound")?;
+    log::info!("delete_inbound = {:#?}", res);
 
-    assert!(res.is_ok());
+    let srv_status = client.server_status().await.context("server_status")?;
+    log::info!("srv_status = {:#?}", srv_status);
 
-    let srv_status = client.server_status().await.expect("server_status");
-    assert!(srv_status.is_ok());
-
-    let db_bytes = client.server_get_db().await.expect("server_get_db");
+    let db_bytes = client.server_get_db().await.context("server_get_db")?;
     assert!(!db_bytes.is_empty(), "db should not be empty");
 
     let imported_db = client
         .import_db_upload("file", db_bytes.clone())
         .await
-        .expect("import_db_upload");
-    assert!(imported_db.is_ok());
+        .context("import_db_upload")?;
+    log::info!("imported_db = {:#?}", imported_db);
 
-    let xver = client.get_xray_version().await.expect("xray_version");
-    assert!(xver.is_ok());
-    let current_version = xver.object.clone();
+    let xver = client.get_xray_version().await.context("xray_version")?;
+    let current_version = xver.clone();
 
-    let cfg = client.get_config_json().await.expect("get_config_json");
-    assert!(cfg.is_ok());
+    let cfg = client.get_config_json().await.context("get_config_json")?;
+    log::info!("cfg = {:#?}", cfg);
 
-    let cpu_hist = client.cpu_history(2).await.expect("cpu_history_1min"); // todo bucket
-    assert!(cpu_hist.is_ok());
+    let cpu_hist = client.cpu_history(2).await.context("cpu_history_1min")?; // todo bucket
 
-    if let Some(first) = cpu_hist.object.first() {
+    if let Some(first) = cpu_hist.first() {
         assert!(first.t > 0, "cpu history timestamp should be > 0");
     }
 
-    let new_uuid = client.get_new_uuid().await.expect("get_new_uuid");
-    assert!(new_uuid.is_ok());
+    let new_uuid = client.get_new_uuid().await.context("get_new_uuid")?;
 
-    let parsed = Uuid::parse_str(&new_uuid.object.uuid);
-    assert!(parsed.is_ok(), "server UUID should be valid");
+    log::info!("new_uuid = {:#?}", new_uuid);
 
-    let x25519 = client.get_new_x25519_cert().await.expect("get_new_x25519");
-    assert!(x25519.is_ok());
+    let x25519 = client
+        .get_new_x25519_cert()
+        .await
+        .context("get_new_x25519")?;
+    log::info!("x25519 = {:#?}", x25519);
 
-    let mldsa = client.get_new_mldsa65().await.expect("get_new_mldsa65");
-    assert!(mldsa.is_ok());
+    let mldsa = client.get_new_mldsa65().await.context("get_new_mldsa65")?;
+    log::info!("mldsa = {:#?}", mldsa);
 
-    let mlkem = client.get_new_mlkem768().await.expect("get_new_mlkem768");
-    assert!(mlkem.is_ok());
+    let mlkem = client
+        .get_new_mlkem768()
+        .await
+        .context("get_new_mlkem768")?;
+    log::info!("mlkem768 = {:#?}", mlkem);
 
-    let venc = client.get_new_vless_enc().await.expect("get_new_vless_enc");
-    assert!(venc.is_ok());
+    let venc = client
+        .get_new_vless_enc()
+        .await
+        .context("get_new_vless_enc")?;
+    log::info!("vless enc = {:#?}", venc);
 
-    let ech = client.get_new_ech_cert().await.expect("get_new_ech_cert");
-    assert!(ech.is_ok()); 
+    let ech = client
+        .get_new_ech_cert()
+        .await
+        .context("get_new_ech_cert")?;
+    log::info!("ech = {:#?}", ech);
 
-    let stopped = client.stop_xray_service().await.expect("stop_xray_service");
-    assert!(stopped.is_ok());
+    client
+        .stop_xray_service()
+        .await
+        .context("stop_xray_service")?;
 
     sleep(Duration::from_secs(1)).await;
 
-    let restarted = client
+    client
         .restart_xray_service()
         .await
-        .expect("restart_xray_service");
-    assert!(restarted.is_ok());
+        .context("restart_xray_service")?;
 
     sleep(Duration::from_secs(2)).await;
 
-    log::info!("ver: {:#?}", current_version.get(0).expect("version"));
+    log::info!("ver: {:#?}", current_version.first().context("version"));
 
-    let reinstall = client
-        .install_xray_version(current_version.get(0).expect("version"))
+    client
+        .install_xray_version(current_version.first().context("version")?)
         .await
-        .expect("install_xray_version");
-    assert!(reinstall.is_ok());
+        .context("install_xray_version")?;
 
-    let geo_all = client.update_geofile().await.expect("update_geofile");
-    assert!(geo_all.is_ok());
+    client.update_geofile().await.context("update_geofile")?;
 
-    let geo_one = client
+    client
         .update_geofile_by_name("geoip.dat")
         .await
-        .expect("update_geofile_by_name");
-    assert!(geo_one.is_ok());
+        .context("update_geofile_by_name")?;
 
-    let logs = client.logs(50).await.expect("logs_count");
-    assert!(logs.is_ok());
+    let logs = client.logs(50).await.context("logs_count")?;
+    log::info!("logs = {:#?}", logs);
 
-    let xlogs = client.xray_logs(50).await.expect("xray_logs_count");
-    assert!(xlogs.is_ok());
+    let xlogs = client.xray_logs(50).await.context("xray_logs_count")?;
+    log::info!("xlogs = {:#?}", xlogs);
 
     let remark = format!("e2e-{}", Uuid::new_v4());
     let req = CreateInboundRequest {
@@ -391,20 +379,22 @@ async fn e2e_full_flow() {
         allocate: "{}".into(),
     };
 
-    let created = client.add_inbound(&req).await.expect("add_inbound");
+    let created = client.add_inbound(&req).await.context("add_inbound")?;
+    log::info!("created = {:#?}", created);
 
-    assert!(created.is_ok());
-
-    let inbds = client.get_inbounds_list().await.expect("list_for_import");
-    assert!(inbds.is_ok());
+    let inbds = client
+        .get_inbounds_list()
+        .await
+        .context("list_for_import")?;
 
     log::info!("{:#?}", inbds);
 
-    let mut import = inbds.object[0].clone();
+    let mut import = inbds[0].clone();
     import.port = 30222;
     let import_inb = client
         .import_inbound(&import)
         .await
-        .expect("import_inbounds");
-    assert!(import_inb.is_ok());
+        .context("import_inbounds")?;
+    log::info!("import_inbound = {:#?}", import_inb);
+    Ok(())
 }

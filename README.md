@@ -14,7 +14,7 @@ Provides typed models and high-level methods for common panel operations.
 
 ## Implemented endpoints
 
-- ✅ login
+- ✅ Login
 - ✅ Inbounds
 - ✅ Inbound
 - ✅ Client traffics with email
