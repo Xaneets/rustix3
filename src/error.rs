@@ -12,6 +12,8 @@ pub enum Error {
     Connection(#[source] reqwest::Error),
     #[error("Invalid credentials!")]
     InvalidCred,
+    #[error("API error: {message}")]
+    ApiError { message: String },
     #[error("Error: {0}!")]
     OtherError(String),
     #[error(transparent)]

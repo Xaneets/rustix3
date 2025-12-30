@@ -1,15 +1,73 @@
 use anyhow::Context;
 use dotenv::dotenv;
 use std::env;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tokio::time::{Duration, sleep};
 use uuid::Uuid;
 
 use rustix3::models::TgId;
 use rustix3::{
     client::Client,
-    inbounds::InboundProtocols,
-    models::{ClientRequest, ClientSettings, CreateInboundRequest, Fallback, Settings, User},
+    inbounds::{InboundProtocols, SniffingOption, TransportProtocol},
+    models::{
+        ClientRequest, ClientSettings, CreateInboundRequest, Fallback, SettingsRequest, Sniffing,
+        StreamSettings, TcpHeader, TcpSettings, UserRequest,
+    },
 };
+
+fn future_expiry_ms(days: u64) -> i64 {
+    let now_ms = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("system time before unix epoch")
+        .as_millis() as i64;
+    let delta = (days as i64) * 24 * 60 * 60 * 1000;
+    now_ms + delta
+}
+
+fn default_stream_settings() -> StreamSettings {
+    StreamSettings {
+        network: Some(TransportProtocol::Tcp),
+        security: Some("none".into()),
+        external_proxy: Some(Vec::new()),
+        tcp_settings: Some(TcpSettings {
+            accept_proxy_protocol: Some(false),
+            header: Some(TcpHeader {
+                header_type: Some("none".into()),
+                extra: Default::default(),
+            }),
+            extra: Default::default(),
+        }),
+        ws_settings: None,
+        grpc_settings: None,
+        kcp_settings: None,
+        http_upgrade_settings: None,
+        xhttp_settings: None,
+        extra: Default::default(),
+    }
+}
+
+fn default_sniffing() -> Sniffing {
+    Sniffing {
+        enabled: false,
+        dest_override: vec![
+            SniffingOption::Http,
+            SniffingOption::Tls,
+            SniffingOption::Quic,
+            SniffingOption::FakeDns,
+        ],
+        metadata_only: false,
+        route_only: false,
+        extra: Default::default(),
+    }
+}
+
+fn default_allocate() -> serde_json::Value {
+    json!({
+        "strategy": "always",
+        "refresh": 5,
+        "concurrency": 3
+    })
+}
 
 #[tokio::test]
 async fn e2e_full_flow() -> anyhow::Result<()> {
@@ -28,24 +86,26 @@ async fn e2e_full_flow() -> anyhow::Result<()> {
     log::info!("list_before = {:#?}", list_before);
 
     let remark = format!("e2e-{}", Uuid::new_v4());
+    let inbound_expiry = future_expiry_ms(30);
     let req = CreateInboundRequest {
         up: 0,
         down: 0,
         total: 0,
         remark: remark.clone(),
         enable: true,
-        expiry_time: 0,
-        listen: String::new(),
+        expiry_time: inbound_expiry,
+        listen: "0.0.0.0".into(),
         port: 31001,
         protocol: InboundProtocols::Vless,
-        settings: Settings {
+        settings: SettingsRequest {
             clients: vec![],
-            decryption: "none".into(),
+            decryption: Some("none".into()),
+            encryption: Some("none".into()),
             fallbacks: Vec::<Fallback>::new(),
         },
-        stream_settings: "{}".into(),
-        sniffing: "{}".into(),
-        allocate: "{}".into(),
+        stream_settings: default_stream_settings(),
+        sniffing: default_sniffing(),
+        allocate: default_allocate(),
     };
 
     let created = client.add_inbound(&req).await.context("add_inbound")?;
@@ -71,16 +131,17 @@ async fn e2e_full_flow() -> anyhow::Result<()> {
 
     let cuuid = Uuid::new_v4().to_string();
     let email = format!("{}@example.com", cuuid);
-    let user_obj = User {
+    let sub_id = Uuid::new_v4().simple().to_string();
+    let user_obj = UserRequest {
         id: cuuid.clone(),
         flow: String::new(),
         email: email.clone(),
-        limit_ip: 0,
-        total_gb: 0,
-        expiry_time: 0,
+        limit_ip: 2,
+        total_gb: 100,
+        expiry_time: future_expiry_ms(14) as u64,
         enable: true,
-        tg_id: TgId::Int(0),
-        sub_id: String::new(),
+        tg_id: Some(TgId::Int(0)),
+        sub_id,
         reset: 0,
     };
     let add_client_req = ClientRequest {
@@ -147,16 +208,17 @@ async fn e2e_full_flow() -> anyhow::Result<()> {
 
     let cuuid = Uuid::new_v4().to_string();
     let email = format!("{}@example.com", cuuid);
-    let user_obj = User {
+    let sub_id = Uuid::new_v4().simple().to_string();
+    let user_obj = UserRequest {
         id: cuuid.clone(),
         flow: String::new(),
         email: email.clone(),
-        limit_ip: 0,
-        total_gb: 0,
-        expiry_time: 0,
+        limit_ip: 2,
+        total_gb: 100,
+        expiry_time: future_expiry_ms(14) as u64,
         enable: true,
-        tg_id: TgId::Int(0),
-        sub_id: String::new(),
+        tg_id: Some(TgId::Int(0)),
+        sub_id,
         reset: 0,
     };
     let add_client_req = ClientRequest {
@@ -201,53 +263,57 @@ async fn e2e_full_flow() -> anyhow::Result<()> {
 
     let cuuid = Uuid::new_v4().to_string();
     let email = "testclient".to_string();
-    let user_obj1 = User {
+    let sub_id = Uuid::new_v4().simple().to_string();
+    let user_obj1 = UserRequest {
         id: cuuid.clone(),
         flow: String::new(),
         email: email.clone(),
-        limit_ip: 0,
-        total_gb: 0,
-        expiry_time: 0,
+        limit_ip: 2,
+        total_gb: 100,
+        expiry_time: future_expiry_ms(7) as u64,
         enable: true,
-        tg_id: TgId::Int(0),
-        sub_id: String::new(),
+        tg_id: Some(TgId::Int(0)),
+        sub_id,
         reset: 0,
     };
 
     let cuuid = Uuid::new_v4().to_string();
     let email = "testclient2".to_string();
-    let user_obj2 = User {
+    let sub_id = Uuid::new_v4().simple().to_string();
+    let user_obj2 = UserRequest {
         id: cuuid.clone(),
         flow: String::new(),
         email: email.clone(),
-        limit_ip: 0,
-        total_gb: 0,
-        expiry_time: 0,
+        limit_ip: 2,
+        total_gb: 100,
+        expiry_time: future_expiry_ms(7) as u64,
         enable: true,
-        tg_id: TgId::Int(0),
-        sub_id: String::new(),
+        tg_id: Some(TgId::Int(0)),
+        sub_id,
         reset: 0,
     };
 
     let remark2 = format!("e2e-del-by-email-{}", Uuid::new_v4());
+    let inbound_expiry = future_expiry_ms(30);
     let tmp_inb_req = CreateInboundRequest {
         up: 0,
         down: 0,
         total: 0,
         remark: remark2.clone(),
         enable: true,
-        expiry_time: 0,
-        listen: String::new(),
+        expiry_time: inbound_expiry,
+        listen: "0.0.0.0".into(),
         port: 31002,
         protocol: InboundProtocols::Vless,
-        settings: Settings {
+        settings: SettingsRequest {
             clients: vec![user_obj1, user_obj2],
-            decryption: "none".into(),
+            decryption: Some("none".into()),
+            encryption: Some("none".into()),
             fallbacks: Vec::<Fallback>::new(),
         },
-        stream_settings: "{}".into(),
-        sniffing: "{}".into(),
-        allocate: "{}".into(),
+        stream_settings: default_stream_settings(),
+        sniffing: default_sniffing(),
+        allocate: default_allocate(),
     };
     let tmp_created = client
         .add_inbound(&tmp_inb_req)
@@ -282,14 +348,14 @@ async fn e2e_full_flow() -> anyhow::Result<()> {
     log::info!("imported_db = {:#?}", imported_db);
 
     let xver = client.get_xray_version().await.context("xray_version")?;
-    let current_version = xver.clone();
+    let current_version = xver.clone().unwrap_or_default();
 
     let cfg = client.get_config_json().await.context("get_config_json")?;
     log::info!("cfg = {:#?}", cfg);
 
     let cpu_hist = client.cpu_history(2).await.context("cpu_history_1min")?; // todo bucket
 
-    if let Some(first) = cpu_hist.first() {
+    if let Some(first) = cpu_hist.as_ref().and_then(|v| v.first()) {
         assert!(first.t > 0, "cpu history timestamp should be > 0");
     }
 
@@ -359,24 +425,26 @@ async fn e2e_full_flow() -> anyhow::Result<()> {
     log::info!("xlogs = {:#?}", xlogs);
 
     let remark = format!("e2e-{}", Uuid::new_v4());
+    let inbound_expiry = future_expiry_ms(30);
     let req = CreateInboundRequest {
         up: 0,
         down: 0,
         total: 0,
         remark: remark.clone(),
         enable: true,
-        expiry_time: 0,
-        listen: String::new(),
+        expiry_time: inbound_expiry,
+        listen: "0.0.0.0".into(),
         port: 31001,
         protocol: InboundProtocols::Vless,
-        settings: Settings {
+        settings: SettingsRequest {
             clients: vec![],
-            decryption: "none".into(),
+            decryption: Some("none".into()),
+            encryption: Some("none".into()),
             fallbacks: Vec::<Fallback>::new(),
         },
-        stream_settings: "{}".into(),
-        sniffing: "{}".into(),
-        allocate: "{}".into(),
+        stream_settings: default_stream_settings(),
+        sniffing: default_sniffing(),
+        allocate: default_allocate(),
     };
 
     let created = client.add_inbound(&req).await.context("add_inbound")?;
@@ -398,3 +466,4 @@ async fn e2e_full_flow() -> anyhow::Result<()> {
     log::info!("import_inbound = {:#?}", import_inb);
     Ok(())
 }
+use serde_json::json;

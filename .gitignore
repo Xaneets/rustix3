@@ -6,3 +6,5 @@ Cargo.lock
 **/*.rs.bk
 
 .idea/
+
+3X-UI.postman_collection.json

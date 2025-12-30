@@ -1,6 +1,6 @@
 [package]
 name = "rustix3"
-version = "0.5.0"
+version = "0.6.0"
 edition = "2024"
 authors = ["Dmitriy Sergeev <xaneets@gmail.com>"]
 description = "API lib for 3x-ui panel"
@@ -21,6 +21,7 @@ serde_json = "1.0.138"
 serde_path_to_error = "0.1.17"
 serde_with = { version = "3.14.0", features = ["json"] }
 thiserror = "2.0.11"
+tokio = { version = "1", features = ["time"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 
 
