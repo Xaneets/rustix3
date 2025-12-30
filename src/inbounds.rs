@@ -1,20 +1,25 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum InboundProtocols {
     Vmess,
     Vless,
     Trojan,
+    #[serde(rename = "shadowsocks")]
     ShadowsSocks,
     #[serde(rename = "dokodemo-door")]
     DokodemoDoor,
     Socks,
     Http,
     Wireguard,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum TransportProtocol {
     Tcp,
@@ -25,9 +30,12 @@ pub enum TransportProtocol {
     GRPC,
     HTTPUpgrade,
     XHTTP,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 pub enum SSMethods {
     #[serde(rename = "aes-256-gcm")]
     AES256Gcm,
@@ -47,17 +55,23 @@ pub enum SSMethods {
     Blake3Aes256Gcm,
     #[serde(rename = "2022-blake3-chacha20-poly1305")]
     Blake3Chacha20Poly1305,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 pub enum TlsFlowControl {
     #[serde(rename = "xtls-rprx-vision")]
     Vision,
     #[serde(rename = "xtls-rprx-vision-udp443")]
     VisionUdp443,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 pub enum TlsVersionOption {
     #[serde(rename = "1.0")]
     TLS10,
@@ -67,9 +81,12 @@ pub enum TlsVersionOption {
     TLS12,
     #[serde(rename = "1.3")]
     TLS13,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 pub enum TlsCipherOption {
     #[serde(rename = "TLS_AES_128_GCM_SHA256")]
     AES128Gcm,
@@ -97,9 +114,12 @@ pub enum TlsCipherOption {
     EcdheEcdsaChacha20Poly1305,
     #[serde(rename = "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256")]
     EcdheRsaChacha20Poly1305,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 pub enum UtlsFingerprint {
     #[serde(rename = "chrome")]
     UtlsChrome,
@@ -125,36 +145,47 @@ pub enum UtlsFingerprint {
     UtlsRandomizedNoAlpn,
     #[serde(rename = "unsafe")]
     UtlsUnsafe,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum AlpnOption {
     H3,
     H2,
     #[serde(rename = "http/1.1")]
     Http1,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum SniffingOption {
     Http,
     Tls,
     Quic,
     FakeDns,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum UsageOption {
     Encipherment,
     Verify,
     Issue,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
-
+#[non_exhaustive]
 pub enum DomainStrategyOption {
     #[serde(rename = "AsIs")]
     AsIs,
@@ -178,17 +209,23 @@ pub enum DomainStrategyOption {
     ForceIpv4v6,
     #[serde(rename = "ForceIPv4")]
     ForceIpv4,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum TcpCongestionOption {
     Bbr,
     Cubic,
     Reno,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "lowercase")]
 pub enum UsersSecurity {
     #[serde(rename = "aes-128-gcm")]
@@ -198,18 +235,24 @@ pub enum UsersSecurity {
     Auto,
     None,
     Zero,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[serde(rename_all = "kebab-case")]
 pub enum ModeOption {
     Auto,
     PacketUp,
     StreamUp,
     StreamOne,
+    #[serde(other)]
+    Unknown,
 }
 
 #[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 #[allow(non_camel_case_types)]
 pub enum StreamSettings {
     TlsStreamSettings,
@@ -220,4 +263,6 @@ pub enum StreamSettings {
     GrpcStreamSettings,
     HttpUpgradeStreamSettings,
     xHTTPStreamSettings,
+    #[serde(other)]
+    Unknown,
 }
