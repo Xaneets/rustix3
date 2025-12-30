@@ -477,7 +477,7 @@ pub struct ServerStatus {
     pub logical_pro: Option<u64>,
     #[serde(default, deserialize_with = "de_opt_num_from_str_or_num")]
     #[serde(rename = "cpuSpeedMhz")]
-    pub cpu_speed_mhz: Option<u64>,
+    pub cpu_speed_mhz: Option<f64>,
     pub mem: Option<MemStat>,
     pub swap: Option<MemStat>,
     pub disk: Option<MemStat>,
